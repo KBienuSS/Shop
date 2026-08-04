@@ -1,18 +1,36 @@
 import { Container, Row, Col, Button, Form } from 'react-bootstrap';
 import { useState } from 'react';
-import { useSelector } from 'react-redux';
-import { getProductById } from '../../../redux/productsRedux'
+import { useSelector, useDispatch } from 'react-redux';
+import {
+  getProductById,
+  getProductsLoadingStatus,
+} from '../../../redux/productsRedux';
+import { addProduct } from '../../../redux/orderRedux';
 import { useParams } from 'react-router-dom';
 
 const Product = () => {
-
   const { id } = useParams();
   const product = useSelector(getProductById(id));
+  const loading = useSelector(getProductsLoadingStatus);
+  const dispatch = useDispatch();
 
   const [quantity, setQuantity] = useState(1);
-  const handleAddToCart = () => {
-    //logika dodawania do koszyka
+
+  const handleAddToCart = (product, quantity) => {
+    dispatch(addProduct(product, quantity));
   };
+
+  if (loading === 'pending' || loading === 'idle') {
+    return <p>Ładowanie produktu...</p>;
+  }
+
+  if (!product) {
+  return (
+    <Container className="my-5 text-center">
+      <p className="fs-4">Produkt nie został znaleziony.</p>
+    </Container>
+  );
+}
 
   return (
     <Container className="my-5">
@@ -43,7 +61,7 @@ const Product = () => {
               />
             </Form.Group>
 
-            <Button variant="primary" onClick={handleAddToCart}>
+            <Button variant="primary" onClick={() => handleAddToCart(product, quantity)}>
               Dodaj do koszyka
             </Button>
           </div>
