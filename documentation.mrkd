@@ -1,0 +1,153 @@
+# Dokumentacja projektu
+
+## 1. Cel projektu
+
+Projekt jest aplikacją e-commerce (sklepem internetowym) umożliwiającą przeglądanie produktów, dodawanie ich do koszyka oraz składanie zamówień.
+
+Aplikacja składa się z dwóch części:
+
+- **Frontend** — napisany w React (komponenty funkcyjne, zarządzanie stanem przez Redux), odpowiada za interfejs użytkownika.
+- **Backend** — napisany w Nest.js, pełni rolę serwera API pośredniczącego w komunikacji z bazą danych.
+
+### Funkcjonalności dostępne dla użytkownika
+
+- Przeglądanie listy wszystkich produktów dostępnych w sklepie.
+- Wyświetlanie szczegółów pojedynczego produktu (opis, cena, zdjęcia dodatkowe).
+- Dodawanie produktów do koszyka, z wyborem ilości.
+- Podgląd zawartości koszyka w formie rozwijanego panelu w górnym menu.
+- Zmiana ilości sztuk danego produktu w koszyku oraz jego usunięcie.
+- Dodanie własnego komentarza/opisu do każdej pozycji w koszyku (np. dodatkowe preferencje co do produktu).
+- Przejście do podsumowania zamówienia, gdzie użytkownik widzi listę zamawianych produktów (bez możliwości edycji) oraz wypełnia formularz z danymi kontaktowymi.
+- Złożenie zamówienia — dane trafiają do bazy danych za pośrednictwem API.
+- Potwierdzenie złożenia zamówienia i automatyczne przekierowanie na stronę główną.
+
+## 2. Jak uruchomić projekt krok po kroku
+
+### Wymagania wstępne
+
+Aby uruchomić projekt lokalnie, potrzebne jest:
+
+- zainstalowany [Node.js](https://nodejs.org/) (wersja 18 lub nowsza),
+- dostęp do serwera bazy danych (lokalnego lub online),
+- menedżer pakietów `npm` (instalowany razem z Node.js).
+
+### Krok 1 — Pobranie repozytorium
+
+```
+git clone <adres repozytorium>
+```
+
+### Krok 2 — Instalacja zależności
+
+Projekt składa się z dwóch niezależnych aplikacji (serwer i klient), więc zależności instaluje się osobno w każdym z folderów.
+
+```bash
+# instalacja zależności serwera (w folderze głównym)
+npm install
+
+# instalacja zależności klienta
+cd client
+npm install
+cd ..
+```
+
+### Krok 3 — Konfiguracja zmiennych środowiskowych
+
+W folderze głównym (obok `package.json` serwera) należy utworzyć plik `.env` z danymi dostępowymi do bazy danych:
+
+```
+DB_HOST=<host bazy danych>
+DB_PORT=<port bazy danych>
+DB_USER=<nazwa użytkownika>
+DB_PASSWORD=<hasło>
+DB_NAME=<nazwa bazy danych>
+```
+
+Więcej informacji o tym, skąd wziąć te dane, znajduje się w sekcji **3. Dodatkowe informacje techniczne**.
+
+### Krok 4 — Wypełnienie bazy danych przykładowymi produktami (opcjonalnie)
+
+Aby baza danych nie była pusta przy pierwszym uruchomieniu, można skorzystać z gotowego skryptu, który wypełni tabelę produktów przykładowymi danymi:
+
+```bash
+npm run seed
+```
+
+### Krok 5 — Uruchomienie aplikacji
+
+**Tryb deweloperski** (osobne procesy dla serwera i klienta, przydatne przy pracy nad kodem):
+
+```bash
+# w folderze głównym — uruchamia serwer API
+npm run start:dev
+
+# w drugim terminalu, w folderze client — uruchamia serwer deweloperski Reacta
+cd client
+npm start
+```
+
+**Tryb produkcyjny** (jeden proces, budujący i serwujący całą aplikację — tak działa też wersja wdrożona):
+
+```bash
+npm run start:full
+```
+
+Ta komenda automatycznie buduje frontend, kompiluje backend, a następnie uruchamia serwer, który udostępnia zarówno API, jak i gotową aplikację frontendową pod adresem głównym.
+
+### Krok 6 — Dostęp do aplikacji
+
+Po uruchomieniu aplikacja jest dostępna pod adresem:
+
+```
+http://localhost:3000
+```
+
+(port może się różnić w zależności od konfiguracji — sprawdź wartość zmiennej `PORT` lub domyślną wartość ustawioną w kodzie serwera).
+
+### Wersja wdrożona (online)
+
+Aplikacja jest dodatkowo dostępna pod adresem: `<adres wdrożonej aplikacji, np. na Render>`.
+
+## 3. Dodatkowe informacje techniczne
+
+### Baza danych
+
+Aplikacja korzysta z relacyjnej bazy danych (PostgreSQL/MySQL — w zależności od środowiska), z którą backend łączy się za pomocą biblioteki TypeORM. Struktura bazy tworzona jest automatycznie przy pierwszym uruchomieniu serwera (mechanizm synchronizacji schematu) — nie ma potrzeby ręcznego tworzenia tabel.
+
+Aby aplikacja mogła połączyć się z bazą danych, wymagane jest podanie danych dostępowych w pliku `.env`, opisanych w kroku 3 powyżej:
+
+| Zmienna | Opis |
+|---|---|
+| `DB_HOST` | Adres serwera bazy danych |
+| `DB_PORT` | Port, na którym nasłuchuje baza danych |
+| `DB_USER` | Nazwa użytkownika bazy danych |
+| `DB_PASSWORD` | Hasło użytkownika |
+| `DB_NAME` | Nazwa konkretnej bazy danych, do której aplikacja ma się łączyć |
+
+Dane te udostępnia dostawca hostingu bazy danych (np. w panelu administracyjnym usługi, w sekcji poświęconej połączeniom/"Connection details"). W przypadku korzystania z bazy lokalnej (np. zainstalowanej przez MySQL Workbench) dane te ustala się samodzielnie podczas instalacji.
+
+### Endpointy API
+
+Backend udostępnia następujące główne endpointy REST API:
+
+| Metoda | Endpoint | Opis |
+|---|---|---|
+| `GET` | `/api/products` | Zwraca listę wszystkich produktów |
+| `GET` | `/api/products/:id` | Zwraca szczegóły pojedynczego produktu |
+| `POST` | `/api/orders` | Przyjmuje i zapisuje nowe zamówienie |
+| `GET` | `/api/orders` | Zwraca listę wszystkich złożonych zamówień |
+| `GET` | `/api/orders/:id` | Zwraca szczegóły pojedynczego zamówienia |
+
+Endpointy nie wymagają dodatkowej autoryzacji ze strony użytkownika końcowego (klucza API, tokenu itp.) — są publicznie dostępne w ramach działania sklepu. Autoryzacja dotyczy wyłącznie połączenia backendu z bazą danych (opisanego powyżej), a nie komunikacji między przeglądarką a serwerem aplikacji.
+
+### Struktura projektu
+
+```
+finall-project/
+├── src/              — kod źródłowy backendu (Nest.js)
+├── client/           — kod źródłowy frontendu (React)
+│   ├── src/
+│   └── build/        — zbudowana wersja produkcyjna frontendu
+├── .env              — zmienne środowiskowe (nieumieszczane w repozytorium)
+└── package.json
+```
